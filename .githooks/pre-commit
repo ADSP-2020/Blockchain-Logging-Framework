@@ -1,7 +1,9 @@
 #!/bin/sh
 
 files=$( ( git diff --cached --name-only --diff-filter=ACMR | grep -Ei "\.java$" ) || true)
+echo $files
 if [ ! -z "${files}" ]; then
- exec mvn spotless:check
+ comma_files=$(echo "$files" | paste -s -d "," -)
  exec mvn spotless:apply
+ git add $(echo "$files" | paste -s -d " " -)
 fi
