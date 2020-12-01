@@ -5,5 +5,5 @@ echo $files
 if [ ! -z "${files}" ]; then
  comma_files=$(echo "$files" | paste -s -d "," -)
  exec mvn spotless:apply
- git add $(echo "$files" | paste -s -d " " -)
+ exec git add $(echo "$files" | paste -s -d " " -)
 fi
