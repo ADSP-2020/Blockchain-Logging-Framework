@@ -88,7 +88,7 @@ mvn test
 
 ```bash
  git config --local core.hooksPath .githooks/
- chmod u+x .githooks/
+ chmod u+x .githooks/pre-commit
 ```
 
 ## License
