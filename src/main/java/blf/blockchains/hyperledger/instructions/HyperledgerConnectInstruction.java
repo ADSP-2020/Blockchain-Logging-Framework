@@ -36,7 +36,6 @@ import org.apache.commons.codec.binary.Base64;
 public class HyperledgerConnectInstruction implements Instruction {
 
     private final Logger logger;
-    private final ExceptionHandler exceptionHandler;
 
     private final String networkConfigFilePath;
     private final String serverKeyFilePath;
@@ -58,16 +57,23 @@ public class HyperledgerConnectInstruction implements Instruction {
         this.channel = channel;
 
         this.logger = Logger.getLogger(HyperledgerConnectInstruction.class.getName());
-        this.exceptionHandler = new ExceptionHandler();
     }
 
     @Override
     public void execute(ProgramState state) throws ProgramException {
         HyperledgerProgramState hyperledgerProgramState = (HyperledgerProgramState) state;
 
-        final Gateway gateway = this.buildGateway(this.networkConfigFilePath, this.serverKeyFilePath, this.serverCrtFilePath, this.mspName);
+        ExceptionHandler exceptionHandler = state.getExceptionHandler();
 
-        final Network network = this.buildNetwork(gateway, channel);
+        final Gateway gateway = this.buildGateway(
+            this.networkConfigFilePath,
+            this.serverKeyFilePath,
+            this.serverCrtFilePath,
+            this.mspName,
+            exceptionHandler
+        );
+
+        final Network network = this.buildNetwork(gateway, channel, exceptionHandler);
 
         hyperledgerProgramState.setGateway(gateway);
         hyperledgerProgramState.setNetwork(network);
@@ -85,7 +91,13 @@ public class HyperledgerConnectInstruction implements Instruction {
      * @param mspName               - mspName parameter
      * @return - new {@link Gateway Gateway} object for the configuration provided
      */
-    private Gateway buildGateway(String networkConfigFilePath, String serverKeyFilePath, String serverCrtFilePath, String mspName) {
+    private Gateway buildGateway(
+        String networkConfigFilePath,
+        String serverKeyFilePath,
+        String serverCrtFilePath,
+        String mspName,
+        ExceptionHandler exceptionHandler
+    ) {
 
         final String infoMsg = String.format(
             "Hyperledger { networkConfigFilePath: %s,  serverKeyFilePath: %s, serverCrtFilePath: %s }",
@@ -200,7 +212,7 @@ public class HyperledgerConnectInstruction implements Instruction {
      * @param channel - provided channel name
      * @return - new {@link Network Network} object
      */
-    public Network buildNetwork(Gateway gateway, String channel) {
+    public Network buildNetwork(Gateway gateway, String channel, ExceptionHandler exceptionHandler) {
 
         final String infoMsg = String.format("Hyperledger { gateway: %s,  channel: %s }", gateway, channel);
 

@@ -1,7 +1,6 @@
 package blf.blockchains.hyperledger.instructions;
 
 import blf.blockchains.hyperledger.state.HyperledgerProgramState;
-import blf.core.exceptions.ExceptionHandler;
 import blf.core.exceptions.ProgramException;
 import blf.core.instructions.FilterInstruction;
 import blf.core.interfaces.Instruction;
@@ -21,7 +20,6 @@ import java.lang.InterruptedException;
 public class HyperledgerBlockFilterInstruction extends FilterInstruction {
 
     private final Logger logger;
-    private final ExceptionHandler exceptionHandler;
 
     private final BigInteger fromBlockNumber;
     private final BigInteger toBlockNumber;
@@ -38,7 +36,6 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
         this.toBlockNumber = toBlockNumber;
 
         this.logger = Logger.getLogger(HyperledgerBlockFilterInstruction.class.getName());
-        this.exceptionHandler = new ExceptionHandler();
     }
 
     public void execute(final ProgramState state) throws ProgramException {
@@ -74,7 +71,7 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
                     this.executeInstructions(hyperledgerProgramState);
                 } catch (ProgramException err) {
                     String errorMsg = String.format("Unable to execute instructions");
-                    exceptionHandler.handleExceptionAndDecideOnAbort(errorMsg, err);
+                    hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort(errorMsg, err);
                 }
             }
         });
@@ -83,49 +80,51 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
                 network.wait();
             } catch (InterruptedException err) {
                 String errorMsg = String.format("Failed when iterating over blocks.");
-                exceptionHandler.handleExceptionAndDecideOnAbort(errorMsg, err);
+                hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort(errorMsg, err);
             }
         }
     }
 
     private boolean executeParametersAreValid(BigInteger fromBlockNumber, BigInteger toBlockNumber, ProgramState state) {
         if (state == null) {
-            exceptionHandler.handleExceptionAndDecideOnAbort("Variable 'state' is null.", new NullPointerException());
+            state.getExceptionHandler().handleExceptionAndDecideOnAbort("Variable 'state' is null.", new NullPointerException());
 
             return false;
         }
 
         if (!(state instanceof HyperledgerProgramState)) {
-            exceptionHandler.handleExceptionAndDecideOnAbort(
-                "Variable 'state' is not an instance of 'HyperledgerProgramState'.",
-                new ClassCastException()
-            );
+            state.getExceptionHandler()
+                .handleExceptionAndDecideOnAbort(
+                    "Variable 'state' is not an instance of 'HyperledgerProgramState'.",
+                    new ClassCastException()
+                );
 
             return false;
         }
 
         if (fromBlockNumber == null) {
-            exceptionHandler.handleExceptionAndDecideOnAbort("Variable 'fromBlockNumber' is null.", new NullPointerException());
+            state.getExceptionHandler().handleExceptionAndDecideOnAbort("Variable 'fromBlockNumber' is null.", new NullPointerException());
 
             return false;
         }
 
         if (toBlockNumber == null) {
-            exceptionHandler.handleExceptionAndDecideOnAbort("Variable 'toBlockNumber' is null.", new NullPointerException());
+            state.getExceptionHandler().handleExceptionAndDecideOnAbort("Variable 'toBlockNumber' is null.", new NullPointerException());
 
             return false;
         }
 
         // fromBlockNumber.compareTo(toBlockNumber) > 0 means fromBlockNumber > toBlockNumber
         if (fromBlockNumber.compareTo(toBlockNumber) > 0) {
-            exceptionHandler.handleExceptionAndDecideOnAbort(
-                String.format(
-                    "In BLOCKS statement the 'fromBlockNumber'(%s) parameter is bigger then 'toBlockNumber'(%s) parameter.",
-                    fromBlockNumber.toString(),
-                    toBlockNumber.toString()
-                ),
-                new Exception()
-            );
+            state.getExceptionHandler()
+                .handleExceptionAndDecideOnAbort(
+                    String.format(
+                        "In BLOCKS statement the 'fromBlockNumber'(%s) parameter is bigger then 'toBlockNumber'(%s) parameter.",
+                        fromBlockNumber.toString(),
+                        toBlockNumber.toString()
+                    ),
+                    new Exception()
+                );
 
             return false;
         }

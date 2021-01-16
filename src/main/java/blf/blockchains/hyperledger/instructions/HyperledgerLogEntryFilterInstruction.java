@@ -1,7 +1,6 @@
 package blf.blockchains.hyperledger.instructions;
 
 import blf.blockchains.hyperledger.state.HyperledgerProgramState;
-import blf.core.exceptions.ExceptionHandler;
 import blf.core.exceptions.ProgramException;
 import blf.core.interfaces.Instruction;
 import blf.core.state.ProgramState;
@@ -22,7 +21,6 @@ import java.util.logging.Logger;
  */
 public class HyperledgerLogEntryFilterInstruction implements Instruction {
 
-    private final ExceptionHandler exceptionHandler;
     private final Logger logger;
     private final List<String> addressNames;
     private final String eventName;
@@ -44,7 +42,6 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
         this.eventName = eventName;
         this.entryParameters = entryParameters;
         this.logger = Logger.getLogger(HyperledgerBlockFilterInstruction.class.getName());
-        this.exceptionHandler = new ExceptionHandler();
     }
 
     /**
@@ -60,7 +57,8 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
         // get current block
         BlockEvent be = hyperledgerProgramState.getCurrentBlock();
         if (be == null) {
-            this.exceptionHandler.handleExceptionAndDecideOnAbort("Expected block, received null", new NullPointerException());
+            hyperledgerProgramState.getExceptionHandler()
+                .handleExceptionAndDecideOnAbort("Expected block, received null", new NullPointerException());
 
             return;
         }
@@ -177,10 +175,8 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
                 String parameterName = this.entryParameters.get(0).b;
                 setStateValue(hyperledgerProgramState, parameterName, parameterType, payloadString, ce.getPayload());
             } else {
-                this.exceptionHandler.handleExceptionAndDecideOnAbort(
-                    "We expect exactly one parameter when extracting unstructured data",
-                    jsonException
-                );
+                hyperledgerProgramState.getExceptionHandler()
+                    .handleExceptionAndDecideOnAbort("We expect exactly one parameter when extracting unstructured data", jsonException);
             }
         }
     }
@@ -207,7 +203,7 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
                 BigInteger data = new BigInteger(payloadString);
                 hyperledgerProgramState.getValueStore().setValue(parameterName, data);
             } catch (NumberFormatException e) {
-                this.exceptionHandler.handleExceptionAndDecideOnAbort("Could not parse payload to BigInteger", e);
+                hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort("Could not parse payload to BigInteger", e);
             }
         } else if (parameterType.contains("string")) {
             hyperledgerProgramState.getValueStore().setValue(parameterName, payloadString);
@@ -216,14 +212,14 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
                 boolean data = payload[0] != 0;
                 hyperledgerProgramState.getValueStore().setValue(parameterName, data);
             } catch (ArrayIndexOutOfBoundsException e) {
-                this.exceptionHandler.handleExceptionAndDecideOnAbort("Could not convert empty payload to bool", e);
+                hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort("Could not convert empty payload to bool", e);
             }
         } else if (parameterType.equals("byte")) {
             try {
                 byte data = payload[0];
                 hyperledgerProgramState.getValueStore().setValue(parameterName, data);
             } catch (ArrayIndexOutOfBoundsException e) {
-                this.exceptionHandler.handleExceptionAndDecideOnAbort("Could not access byte in empty payload", e);
+                hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort("Could not access byte in empty payload", e);
             }
         } else if (parameterType.contains("bytes")) {
             hyperledgerProgramState.getValueStore().setValue(parameterName, payload);
@@ -259,11 +255,11 @@ public class HyperledgerLogEntryFilterInstruction implements Instruction {
                     hyperledgerProgramState.getValueStore().setValue(parameterName, data);
                 }
             } catch (JSONException e) {
-                this.exceptionHandler.handleExceptionAndDecideOnAbort("Wrong type: " + parameterType, e);
+                hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort("Wrong type: " + parameterType, e);
             }
         } else {
             String message = "JSON object does not contain key: " + parameterName;
-            this.exceptionHandler.handleExceptionAndDecideOnAbort(message, new JSONException(message));
+            hyperledgerProgramState.getExceptionHandler().handleExceptionAndDecideOnAbort(message, new JSONException(message));
         }
     }
 }

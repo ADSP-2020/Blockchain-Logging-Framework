@@ -41,7 +41,7 @@ public class HyperledgerListener extends BaseBlockchainListener {
 
         hyperledgerProgramState = (HyperledgerProgramState) this.state;
         logger = Logger.getLogger(HyperledgerListener.class.getName());
-        exceptionHandler = new ExceptionHandler();
+        exceptionHandler = this.state.getExceptionHandler();
     }
 
     /**
