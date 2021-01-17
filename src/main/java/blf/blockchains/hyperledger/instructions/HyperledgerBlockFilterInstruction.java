@@ -82,7 +82,7 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
                 valueStore.setValue(BLOCK_NUMBER, blockEvent.getBlockNumber());
                 valueStore.setValue(BLOCK_HASH, blockEvent.hashCode());
                 valueStore.setValue(BLOCK_TRANSACTION_COUNT, blockEvent.getTransactionCount());
-                
+
                 try {
                     this.executeInstructions(hyperledgerProgramState);
                 } catch (ProgramException err) {
