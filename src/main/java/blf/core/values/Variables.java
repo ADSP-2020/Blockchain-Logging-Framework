@@ -10,10 +10,10 @@ import io.reactivex.annotations.NonNull;
 public class Variables {
 
     public static ValueAccessor createValueAccessor(@NonNull String name) {
-        final ValueAccessor accessor = EthereumVariables.getValueAccessor(name);
-        if (accessor != null) {
-            return accessor;
-        }
+        // final ValueAccessor accessor = EthereumVariables.getValueAccessor(name);
+        // if (accessor != null) {
+        // return accessor;
+        // }
 
         return state -> {
             if (!state.getValueStore().containsName(name)) {
