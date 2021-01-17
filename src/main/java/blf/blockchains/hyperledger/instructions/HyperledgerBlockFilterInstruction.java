@@ -7,8 +7,10 @@ import blf.core.instructions.FilterInstruction;
 import blf.core.interfaces.Instruction;
 import blf.core.state.ProgramState;
 
+import blf.core.values.ValueStore;
 import org.hyperledger.fabric.sdk.BlockEvent;
 import org.hyperledger.fabric.gateway.Network;
+import org.hyperledger.fabric.sdk.BlockInfo;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -25,6 +27,10 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
 
     private final BigInteger fromBlockNumber;
     private final BigInteger toBlockNumber;
+
+    private final String BLOCK_NUMBER = "block.number";
+    private final String BLOCK_HASH = "block.hash";
+    private final String BLOCK_TRANSACTION_COUNT = "block.transaction_count";
 
     public HyperledgerBlockFilterInstruction(
         final BigInteger fromBlockNumber,
@@ -72,7 +78,11 @@ public class HyperledgerBlockFilterInstruction extends FilterInstruction {
                 String infoMsg = currentBlockNumber.toString();
                 this.logger.info("Extracting block number: " + infoMsg);
                 hyperledgerProgramState.setCurrentBlock(blockEvent);
-
+                ValueStore valueStore = hyperledgerProgramState.getValueStore();
+                valueStore.setValue(BLOCK_NUMBER, blockEvent.getBlockNumber());
+                valueStore.setValue(BLOCK_HASH, blockEvent.hashCode());
+                valueStore.setValue(BLOCK_TRANSACTION_COUNT, blockEvent.getTransactionCount());
+                
                 try {
                     this.executeInstructions(hyperledgerProgramState);
                 } catch (ProgramException err) {
