@@ -49,7 +49,6 @@ function main() {
 	touch "$ED"/NetworkStatisticsStreaming/error.log.xblf
 	touch "$ED"/CryptoKittiesStreaming/error.log.xblf
 	touch "$ED"/HyperBasicStreaming/error.log.xblf
-	touch "$ED"/HyperContract/error.log.xblf
 	touch "$ED"/NetworkStatisticsExternalError/error.log.xblf
 	touch "$ED"/NetworkStatisticsExternalErrorAndName/customErrorName.log.xblf
 
@@ -365,18 +364,6 @@ function main() {
 	cmp HyperBasicStreaming/33.log{,.xblf} || { redecho "Comparing the extracted data with the expected data failed! Leaving test environment as is for investigation" ; exit 2; }
 	cmp HyperBasicStreaming/error.log{,.xblf} || { redecho "Comparing the extracted data with the expected data failed! Leaving test environment as is for investigation" ; exit 2; }
 	[ "$(find HyperBasicStreaming/ | wc -l)" -eq 11 ] || { redecho "Streaming mode created too many files!" ; exit 2; }
-	colorecho "Test successful"
-
-  #--------------------------------------------------------------------------------
-
-	colorecho "Testing HyperContract"
-	if [ "$1" = "$SILENT_PARAM" ] || [ "$2" = "$SILENT_PARAM" ] || [ "$3" = "$SILENT_PARAM" ]; then
-	  java -jar "$JAR" extract HyperContract.bcql &> /dev/null
-	else
-	  java -jar "$JAR" extract HyperContract.bcql
-  fi
-		cmp HyperContract/all.log{,.xblf} || { redecho "Comparing the extracted data with the expected data failed! Leaving test environment as is for investigation" ; exit 2; }
-	  cmp HyperContract/error.log{,.xblf} || { redecho "Comparing the extracted data with the expected data failed! Leaving test environment as is for investigation" ; exit 2; }
 	colorecho "Test successful"
 
   #--------------------------------------------------------------------------------
